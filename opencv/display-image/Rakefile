@@ -1,0 +1,22 @@
+require 'rake/clean'
+
+APP_NAME = 'display-image'
+CFLAGS = `pkg-config --cflags opencv`.strip
+LIBS = `pkg-config --libs opencv`.strip
+
+CLEAN.include(APP_NAME, '*.o')
+
+task :default => [APP_NAME]
+
+SRC = FileList['*.c']
+OBJ = SRC.ext 'o'
+
+rule '.o' => '.c' do |file|
+  `gcc -c #{CFLAGS} -o #{file.name} #{file.source}`
+end
+
+file APP_NAME => OBJ do
+  `gcc #{LIBS} -o #{APP_NAME} #{OBJ}`
+end
+
+file 'display-image.o' => 'display-image.c'
