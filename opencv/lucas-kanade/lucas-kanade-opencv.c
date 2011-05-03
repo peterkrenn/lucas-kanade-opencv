@@ -14,7 +14,9 @@ IplImage *query_frame(CvCapture *video, IplImage **frame_buffer, IplImage *curre
   if (frame) {
     cvConvertImage(frame, current_frame, 0);
 
-    frame_buffer[1] = frame_buffer[0];
+    IplImage *temp = frame_buffer[0];
+    frame_buffer[0] = frame_buffer[1];
+    frame_buffer[1] = temp;
     cvConvertImage(frame, frame_buffer[0], 0);
   }
 
@@ -122,7 +124,7 @@ int main(int argc, char **argv) {
       points[0] = cvPoint(cvRound(corners[0][i].x), cvRound(corners[0][i].y));
       points[1] = cvPoint(cvRound(corners[1][i].x), cvRound(corners[1][i].y));
 
-      cvLine(current_frame, points[0], points[1], CV_RGB(255, 0, 0), 2, CV_AA, 0);
+      cvLine(current_frame, points[0], points[1], CV_RGB(255, 0, 0), 1, 8, 0);
     }
 
     cvWriteFrame(video_writer, current_frame);
