@@ -59,25 +59,29 @@ int main(int argc, char **argv) {
   CvVideoWriter *video_writer = cvCreateVideoWriter(output_file_name,
     FOURCC, video_fps, video_frame_size, true);
 
-  IplImage *frame_buffer[2];
-  frame_buffer[0] = cvCreateImage(video_frame_size, IPL_DEPTH_8U, 1);
-  frame_buffer[1] = cvCreateImage(video_frame_size, IPL_DEPTH_8U, 1);
+  // Initialize variables for optical flow calculation
   IplImage *current_frame = cvCreateImage(video_frame_size, IPL_DEPTH_8U, 3);
-
   IplImage *eigen_image = cvCreateImage(video_frame_size, IPL_DEPTH_32F, 1);
   IplImage *temp_image = cvCreateImage(video_frame_size, IPL_DEPTH_32F, 1);
+
   int corner_count = MAX_CORNERS;
   CvPoint2D32f corners[2][MAX_CORNERS];
-
   char features_found[MAX_CORNERS];
   float feature_errors[MAX_CORNERS];
-  CvSize pyramid_size = cvSize(video_frame_size.width + 8, video_frame_size.height / 3);
+
+  IplImage *frame_buffer[2];
   IplImage *pyramid_images[2];
-  pyramid_images[0] = cvCreateImage(video_frame_size, IPL_DEPTH_32F, 1);
-  pyramid_images[1] = cvCreateImage(video_frame_size, IPL_DEPTH_32F, 1);
+  CvSize pyramid_size = cvSize(video_frame_size.width + 8, video_frame_size.height / 3);
+
+  int i;
+  for (i = 0; i < 2; i++) {
+    frame_buffer[i] = cvCreateImage(video_frame_size, IPL_DEPTH_8U, 1);
+    pyramid_images[i] = cvCreateImage(video_frame_size, IPL_DEPTH_32F, 1);
+  }
 
   // Process video
   while (query_frame(video, frame_buffer, current_frame)) {
+    // Corner finding with Shi and Thomasi
     cvGoodFeaturesToTrack(
       frame_buffer[0],
       eigen_image,
@@ -99,6 +103,7 @@ int main(int argc, char **argv) {
       cvSize(-1, -1),
       cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3));
 
+    // Pyramid Lucas-Kanade
     cvCalcOpticalFlowPyrLK(
       frame_buffer[0],
       frame_buffer[1],
@@ -114,6 +119,7 @@ int main(int argc, char **argv) {
       cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3),
       0);
 
+    // Draw optical flow vectors
     int i;
     for (i = 0; i < corner_count; i++) {
       if (features_found[i] == 0 || feature_errors[i] > 550) {
@@ -131,7 +137,14 @@ int main(int argc, char **argv) {
   }
 
   // Clean up
-  // TODO: Release stuff
+  cvReleaseImage(&current_frame);
+  cvReleaseImage(&eigen_image);
+  cvReleaseImage(&temp_image);
+
+  for (i = 0; i < 2; i++) {
+    cvReleaseImage(&frame_buffer[0]);
+    cvReleaseImage(&pyramid_images[0]);
+  }
   cvReleaseCapture(&video);
   cvReleaseVideoWriter(&video_writer);
 
