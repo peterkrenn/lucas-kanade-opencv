@@ -1,2 +1,5 @@
+lucas-kanade-opencv
+*.o
+output.avi
 .DS_Store
 *.swp
