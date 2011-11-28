@@ -16,7 +16,7 @@ rule '.o' => '.c' do |file|
 end
 
 file APP_NAME => OBJ do
-  `gcc #{LIBS} -o #{APP_NAME} #{OBJ}`
+  `gcc -o #{APP_NAME} #{OBJ} #{LIBS}`
 end
 
 file 'lucas-kanade-opencv.o' => 'lucas-kanade-opencv.c'
