@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
   int i;
   for (i = 0; i < 2; i++) {
     frame_buffer[i] = cvCreateImage(video_frame_size, IPL_DEPTH_8U, 1);
-    pyramid_images[i] = cvCreateImage(video_frame_size, IPL_DEPTH_32F, 1);
+    pyramid_images[i] = cvCreateImage(pyramid_size, IPL_DEPTH_32F, 1);
   }
 
   // Process video
